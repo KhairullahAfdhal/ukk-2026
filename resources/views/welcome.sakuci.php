@@ -10,7 +10,7 @@
 
         <h1 class="display-5 fw-bold mb-3">
             Selamat Datang di Peminjaman Buku<br class="d-none d-md-inline">
-            <span class="text-brand">Perpus Online</span>
+            <span class="text-brand">MARI LITERASI</span>
         </h1>
 
         <p class="lead text-secondary mx-auto mb-4" style="max-width: 620px;"><b>
