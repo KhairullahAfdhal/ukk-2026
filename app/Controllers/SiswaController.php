@@ -23,7 +23,7 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama_siswa' => 'required|string|max:255',
             'nis' => 'required|string|unique:siswa,nis',
             'kelas' => 'required|string|max:10',
         ]);
@@ -36,13 +36,13 @@ class SiswaController extends Controller
         );
 
         Siswa::create([
-            'nama' => $request->nama,
+            'nama_siswa' => $request->nama,
             'nis' => $request->nis,
             'kelas' => $request->kelas,
             'id_user' => $user->id,
         ]);
 
-        return redirect()->route('admin.siswa.index')->with('success', 'Siswa berhasil ditambahkan.');
+        return redirect()->route('siswa.index')->with('success', 'Siswa berhasil ditambahkan.');
     }
 
     public function edit($id_siswa)
@@ -54,18 +54,18 @@ class SiswaController extends Controller
      public function update(Request $request, $id_siswa)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama_siswa' => 'required|string|max:255',
             'nis' => 'required|string|unique:siswa,nis',
             'kelas' => 'required|string|max:10',
         ]);
 
         $siswa = Siswa::findOrFail($id_siswa);
         $siswa->update([
-            'nama' => $request->input('nama'),
+            'nama_siswa' => $request->input('nama'),
             'nis' => $request->input('nis'),
             'kelas' => $request->input('kelas'),
         ]);
 
-        return redirect()->route('admin.siswa.index')->with('success', 'Siswa berhasil diperbarui.');
+        return redirect()->route('siswa.index')->with('success', 'Siswa berhasil diperbarui.');
     }
 }

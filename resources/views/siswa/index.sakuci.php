@@ -19,9 +19,12 @@
             @php 
             $no = 1;
             @endphp
-            @foreach ($data as $items)
+            @foreach ($siswa as $items)
             <tr>
                 <td>{{ $no++ }}</td>
+                <td>{{ $items->nama_siswa }}</td>
+                <td>{{ $items->nis }}</td>
+                <td>{{ $items->kelas }}</td>
                 <td>{{ $items->keterangan }}</td>
                 <td>
                     <a href="{{ route('siswa.edit', ['id_siswa' => $items->id_siswa]) }}" class="btn btn-sm btn-warning">Edit</a>
@@ -36,6 +39,6 @@
         </tbody>
     </table>
     
-    {!! $data->links() !!}
+    {!! $siswa->links() !!}
 </div>
 @endsection

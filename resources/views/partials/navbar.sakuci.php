@@ -71,6 +71,12 @@
                     <span class="sidebar-label">Kategori</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ is_route('buku.index') ? 'active' : '' }}" href="{{ route('buku.index') }}">
+                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+                    <span class="sidebar-label">Buku</span>
+                </a>
+            </li>
 
             @if ($currentUser)
                 <li class="nav-item">

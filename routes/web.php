@@ -52,21 +52,32 @@ Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
     Route::put('/roles/{role}', [RoleController::class, 'update'])->name('admin.roles.update');
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('admin.roles.destroy');
 
-    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
-    Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/user', [UserController::class, 'index'])->name('admin.users.index');
+    Route::post('/user', [UserController::class, 'store'])->name('admin.users.store');
 
     Route::get('/database/export', [DatabaseController::class, 'export'])->name('admin.database.export');
     
-    Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
-    Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
-    Route::post('/kategori/store', [KategoriController::class, 'store'])->name('kategori.store');
-    Route::get('/kategori/{id_kategori}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
-    Route::put('/kategori/{id_kategori}', [KategoriController::class, 'update'])->name('kategori.update');
-    Route::delete('/kategori/{id_kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+    Route::get('/kategori', [KategoriController::class, 'index'])->name('admin.kategori.index');
+    Route::get('/kategori/create', [KategoriController::class, 'create'])->name('admin.kategori.create');
+    Route::post('/kategori/store', [KategoriController::class, 'store'])->name('admin.kategori.store');
+    Route::get('/kategori/{id_kategori}/edit', [KategoriController::class, 'edit'])->name('admin.kategori.edit');
+    Route::put('/kategori/{id_kategori}', [KategoriController::class, 'update'])->name('admin.kategori.update');
+    Route::delete('/kategori/{id_kategori}', [KategoriController::class, 'destroy'])->name('admin.kategori.destroy');
 
     Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
     Route::get('/siswa/create', [SiswaController::class, 'create'])->name('siswa.create');
     Route::post('/siswa/store', [SiswaController::class, 'store'])->name('siswa.store');
+    Route::get('/siswa/{id_siswa}/edit', [SiswaController::class, 'edit'])->name('siswa.edit');
+    Route::post('/siswa/{id_siswa}', [SiswaController::class, 'update'])->name('siswa.update');
+    Route::delete('/siswa/{id_siswa}', [SiswaController::class, 'delete'])->name('siswa.delete');
+
+    Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');
+    Route::get('/buku/create', [BukuController::class, 'create'])->name('buku.create');
+    Route::post('/buku/store', [BukuController::class, 'store'])->name('buku.store');
+    Route::get('/buku/{id_buku}/edit', [BukuController::class, 'edit'])->name('buku.edit');
+    Route::post('/buku/{id_buku}', [BukuController::class, 'update'])->name('buku.update');
+    Route::delete('/buku/{id_buku}', [BukuController::class, 'delete'])->name('buku.delete');
+
 });
 
 /*

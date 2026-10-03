@@ -7,7 +7,7 @@ use Sakuci\Session;
 
 class User extends Model
 {
-    protected static ?string $table = 'users';
+    protected static ?string $table = 'user';
 
     // Kolom yang boleh diisi lewat create()/update()
     protected array $fillable = ['username', 'password', 'role'];
