@@ -27,7 +27,8 @@
 <nav class="navbar bg-body border-bottom sticky-top app-topbar">
     <div class="container-fluid d-flex align-items-center gap-2">
         <div class="sidebar-toggle-wrap">
-            <button id="sidebarToggleBtn" class="btn btn-sm border-0 p-1 d-flex align-items-center" type="button"
+            {{-- Tombol toggle hanya aktif pada tampilan mobile (d-lg-none) --}}
+            <button id="sidebarToggleBtn" class="btn btn-sm border-0 p-1 d-flex align-items-center d-lg-none" type="button"
                     aria-controls="appSidebar" aria-expanded="false" aria-label="Buka/tutup sidebar" title="Buka/tutup sidebar">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
             </button>
@@ -47,7 +48,7 @@
     </div>
 </nav>
 
-{{-- Sidebar. offcanvas di mobile, fixed + bisa diciutkan/dilebarkan lewat tombol topbar di lg ke atas --}}
+{{-- Sidebar: offcanvas di mobile, fixed terbuka permanen di layar besar (lg ke atas) --}}
 <aside class="offcanvas-lg offcanvas-start app-sidebar bg-body border-end" tabindex="-1" id="appSidebar" aria-labelledby="appSidebarLabel">
 
     <div class="offcanvas-header d-lg-none">
@@ -153,7 +154,7 @@
         pointer-events: none;
     }
 
-    /* Lebar sidebar & posisinya di layar besar */
+    /* Lebar sidebar & posisinya di layar besar (Permanen Terbuka) */
     .app-sidebar {
         --sidebar-w: 240px;
     }
@@ -167,23 +168,13 @@
             overflow-y: auto;
             overflow-x: hidden;
             z-index: 100;
-            transition: width .18s ease, transform .18s ease;
+            transform: none !important; /* Mencegah sidebar tertutup */
+            visibility: visible !important;
         }
-        /* Dorong konten utama ke kanan sejauh lebar sidebar.
-           Bungkus konten halaman kamu dalam <div class="app-content"> */
+        /* Menggeser konten utama ke kanan agar tidak tertumpuk sidebar */
         .app-content {
             margin-left: var(--sidebar-w);
             min-height: calc(100vh - var(--topbar-h));
-            transition: margin-left .18s ease;
-        }
-
-        /* State tertutup: sidebar disembunyikan total, konten memenuhi ruang */
-        .app-sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-        .app-sidebar.collapsed ~ .app-content,
-        body:has(.app-sidebar.collapsed) .app-content {
-            margin-left: 0;
         }
     }
 
@@ -219,34 +210,17 @@
 </style>
 
 <script>
-    // Terapkan state tertutup sebelum render, supaya tidak ada "kedipan" sidebar
-    (function () {
-        var el = document.getElementById('appSidebar');
-        if (localStorage.getItem('sidebarCollapsed') === '1') {
-            el.classList.add('collapsed');
-        }
-    })();
-</script>
-
-<script>
     document.addEventListener('DOMContentLoaded', function () {
         var sidebar = document.getElementById('appSidebar');
         var btn = document.getElementById('sidebarToggleBtn');
         if (!sidebar || !btn) return;
 
+        // Tombol toggle hanya dipakai untuk memunculkan offcanvas di versi mobile
         btn.addEventListener('click', function () {
             if (window.innerWidth < 992) {
-                // Mobile/tablet: pakai Bootstrap Offcanvas API secara manual
-                // (bukan lewat data-bs-toggle, supaya tidak dobel listener dengan kode di bawah)
                 var oc = bootstrap.Offcanvas.getOrCreateInstance(sidebar);
                 oc.toggle();
-                return;
             }
-
-            // Desktop: sembunyikan/tampilkan sidebar fixed
-            var collapsed = sidebar.classList.toggle('collapsed');
-            localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
-            btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         });
     });
 </script>

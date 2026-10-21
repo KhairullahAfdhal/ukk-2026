@@ -8,5 +8,15 @@ class Peminjaman extends Model
 {
     protected static ?string $table = 'peminjaman';
 
-    protected array $fillable = [];
+    protected string $primaryKey = 'id_peminjaman';
+
+    protected array $fillable = [
+        'id_user',
+        'id_alat',
+        'jumlah',
+        'tanggal_pinjam',
+        'tanggal_kembali',
+        'status',
+        'denda'
+    ];
 }

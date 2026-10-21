@@ -7,33 +7,17 @@ use App\Controllers\Core\DocsController;
 use App\Controllers\Core\RoleController;
 use App\Controllers\Core\UserController;
 use App\Controllers\KategoriController;
-use App\Controllers\SiswaController;
+use App\Controllers\BukuController;
+use App\Controllers\PeminjamanController;
+use App\Controllers\PengembalianController;
+use App\Controllers\LogAktifitasController;
 use Sakuci\Route;
-
-/*
-|--------------------------------------------------------------------------
-| Route Web
-|--------------------------------------------------------------------------
-| Daftarkan seluruh route aplikasi di sini.
-|
-| Cara menulis action:
-|   [HomeController::class, 'index']   -> disarankan
-|   'HomeController@index'             -> namespace App\Controllers otomatis
-|   function () { ... }                -> closure
-*/
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
 Route::get('/docs', [DocsController::class, 'index'])->name('docs');
-
-/*
-|--------------------------------------------------------------------------
-| Login multi-role
-|--------------------------------------------------------------------------
-| Lihat /docs untuk penjelasan lengkap langkah demi langkah.
-*/
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->name('login.attempt')->middleware('guest');
@@ -44,6 +28,9 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.at
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 
+// ==========================================
+// ROLE: ADMIN
+// ==========================================
 Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
     Route::get('/', [DashboardController::class, 'admin'])->name('admin.dashboard');
 
@@ -52,66 +39,65 @@ Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
     Route::put('/roles/{role}', [RoleController::class, 'update'])->name('admin.roles.update');
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('admin.roles.destroy');
 
-    Route::get('/user', [UserController::class, 'index'])->name('admin.users.index');
-    Route::post('/user', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
 
     Route::get('/database/export', [DatabaseController::class, 'export'])->name('admin.database.export');
     
-    Route::get('/kategori', [KategoriController::class, 'index'])->name('admin.kategori.index');
-    Route::get('/kategori/create', [KategoriController::class, 'create'])->name('admin.kategori.create');
-    Route::post('/kategori/store', [KategoriController::class, 'store'])->name('admin.kategori.store');
-    Route::get('/kategori/{id_kategori}/edit', [KategoriController::class, 'edit'])->name('admin.kategori.edit');
-    Route::put('/kategori/{id_kategori}', [KategoriController::class, 'update'])->name('admin.kategori.update');
-    Route::delete('/kategori/{id_kategori}', [KategoriController::class, 'destroy'])->name('admin.kategori.destroy');
+    Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
+    Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
+    Route::post('/kategori/store', [KategoriController::class, 'store'])->name('kategori.store');
+    Route::get('/kategori/{id_kategori}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
+    Route::put('/kategori/{id_kategori}', [KategoriController::class, 'update'])->name('kategori.update');
+    Route::delete('/kategori/{id_kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
 
-    Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
-    Route::get('/siswa/create', [SiswaController::class, 'create'])->name('siswa.create');
-    Route::post('/siswa/store', [SiswaController::class, 'store'])->name('siswa.store');
-    Route::get('/siswa/{id_siswa}/edit', [SiswaController::class, 'edit'])->name('siswa.edit');
-    Route::post('/siswa/{id_siswa}', [SiswaController::class, 'update'])->name('siswa.update');
-    Route::delete('/siswa/{id_siswa}', [SiswaController::class, 'delete'])->name('siswa.delete');
-
+    // ROUTE ALAT (Disetujui untuk POST pada Hapus & Update sesuai Controller)
     Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');
     Route::get('/buku/create', [BukuController::class, 'create'])->name('buku.create');
     Route::post('/buku/store', [BukuController::class, 'store'])->name('buku.store');
     Route::get('/buku/{id_buku}/edit', [BukuController::class, 'edit'])->name('buku.edit');
-    Route::post('/buku/{id_buku}', [BukuController::class, 'update'])->name('buku.update');
-    Route::delete('/buku/{id_buku}', [BukuController::class, 'delete'])->name('buku.delete');
+    Route::post('/buku/{id_buku}/delete', [BukuController::class, 'delete'])->name('buku.delete');
+    Route::put('/buku/{id_buku}', [BukuController::class, 'update'])->name('buku.update');
+    Route::delete('/buku/{id_buku}', [BukuController::class, 'destroy'])->name('buku.destroy');
 
+    Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
+    Route::get('/peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
+    Route::post('/peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
+    Route::get('/peminjaman/{id}/edit', [PeminjamanController::class, 'edit'])->name('peminjaman.edit');
+    Route::post('/peminjaman/{id}/update', [PeminjamanController::class, 'update'])->name('peminjaman.update');
+    Route::post('/peminjaman/{id}/delete', [PeminjamanController::class, 'delete'])->name('peminjaman.delete');
+
+    Route::get('/pengembalian', [PengembalianController::class, 'index'])->name('pengembalian.index');
+    Route::get('/pengembalian/create', [PengembalianController::class, 'create'])->name('pengembalian.create');
+    Route::post('/pengembalian', [PengembalianController::class, 'store'])->name('pengembalian.store');
+    Route::get('/pengembalian/{id}/edit', [PengembalianController::class, 'edit'])->name('pengembalian.edit');
+    Route::post('/pengembalian/{id}/update', [PengembalianController::class, 'update'])->name('pengembalian.update');
+    Route::post('/pengembalian/{id}/delete', [PengembalianController::class, 'delete'])->name('pengembalian.delete');
+
+    Route::get('/log-aktifitas', [LogAktifitasController::class, 'index'])->name('admin.log.index');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Route role dinamis
-|--------------------------------------------------------------------------
-| Blok di bawah ini dikelola otomatis oleh RoleController saat admin
-| menambah, mengganti nama, atau menghapus role lewat /admin/roles.
-| Jangan diedit manual -- perubahan bisa tertimpa.
-*/
-// @generated-roles:start
-
-// @role:siswa:start
-Route::group(['prefix' => 'siswa', 'middleware' => 'siswa'], function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('siswa.dashboard');
+// ==========================================
+// ROLE: PEMINJAM 
+// ==========================================
+Route::group(['prefix' => 'peminjam', 'middleware' => 'peminjam'], function () {
+    Route::get('/', [DashboardController::class, 'peminjam'])->name('peminjam.dashboard');
+    Route::get('/daftar-alat', [AlatController::class, 'daftarAlatPeminjam'])->name('peminjam.alat');
+    Route::get('/peminjam', [PeminjamanController::class, 'indexPeminjam'])->name('peminjam.indexPeminjam');
+    Route::get('/peminjam/ajukan', [PeminjamanController::class, 'createPeminjam'])->name('peminjam.createPeminjam');
+    Route::post('/peminjam/ajukan', [PeminjamanController::class, 'storePeminjam'])->name('peminjam.storePeminjam');
+    Route::get('/riwayat-peminjaman', [PeminjamanController::class, 'indexPeminjam'])->name('peminjam.riwayat');
+    Route::get('/pengembalian/ajukan', [PengembalianController::class, 'createPeminjam'])->name('peminjam.pengembalian.create');
+    Route::post('/pengembalian/store', [PengembalianController::class, 'storePeminjam'])->name('peminjam.pengembalian.store');
 });
-// @role:siswa:end
-// @generated-roles:end
 
-/*
-|--------------------------------------------------------------------------
-| Contoh (hapus/ubah sesuai kebutuhan)
-|--------------------------------------------------------------------------
-|
-| use App\Controllers\BukuController;
-|
-| Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');
-|
-| // Tujuh route CRUD sekaligus: index, create, store, show, edit, update, destroy
-| // Route::resource
-|
-| // Group dengan prefix dan middleware bersama
-| Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
-|     Route::get('/dashboard', [DashboardController::class, 'index']);
-| });
-*/
-
+// ==========================================
+// ROLE: PETUGAS
+// ==========================================
+Route::group(['prefix' => 'petugas', 'middleware' => 'petugas'], function () {
+    Route::get('/', [DashboardController::class, 'petugas'])->name('petugas.dashboard');
+    Route::get('/peminjaman', [PeminjamanController::class, 'indexPetugas'])->name('petugas.peminjaman.index');
+    Route::post('/peminjaman/{id}/setujui', [PeminjamanController::class, 'setujuiPetugas'])->name('petugas.peminjaman.setujui');
+    Route::get('/pengembalian', [PengembalianController::class, 'indexPetugas'])->name('petugas.pengembalian.index');
+    Route::get('/pengembalian/cetak', [PengembalianController::class, 'cetakPetugas'])->name('petugas.pengembalian.cetak');
+});

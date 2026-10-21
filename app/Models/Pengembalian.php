@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+use Sakuci\Database\Model;
+
+class Pengembalian extends Model
+{
+    protected static ?string $table = 'pengembalian';
+
+    protected string $primaryKey = 'id_pengembalian';
+
+    public bool $timestamps = false;
+
+    protected array $fillable = [
+        'id_peminjaman',
+        'tanggal_pengembalian',
+        'terlambat_hari',
+        'denda',
+        'kondisi_barang',
+        'catatan',
+        'update_at'
+    ];
+}

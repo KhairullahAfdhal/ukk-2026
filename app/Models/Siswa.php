@@ -7,6 +7,6 @@ use Sakuci\Database\Model;
 class Siswa extends Model
 {
     protected static ?string $table = 'siswa';
-    protected string $primaryKey = 'id_siswa';
-    protected array $fillable = ['id_user', 'nama_siswa', 'nis', 'kelas'];
+
+    protected array $fillable = [];
 }
