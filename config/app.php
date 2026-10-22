@@ -35,6 +35,7 @@ return [
         'auth'  => App\Middleware\Authenticate::class,
         'guest' => App\Middleware\RedirectIfAuthenticated::class,
         'admin' => App\Middleware\AdminOnly::class,
+        'petugas' => App\Middleware\PetugasOnly::class,
         // Alias role lain ditambahkan otomatis di sini oleh RoleController
         // saat admin membuat role baru lewat /admin/roles.
     ],

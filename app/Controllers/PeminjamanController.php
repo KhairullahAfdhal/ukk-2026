@@ -168,34 +168,33 @@ class PeminjamanController extends Controller
         return view('peminjam.create_peminjam', compact('buku'));
     }
 
-    public function storePeminjam(Request $request)
-    {
-        $currentUser = User::current();
+   public function storePeminjam(Request $request)
+{
+    $currentUser = User::current();
 
-        if (! $currentUser) {
-            return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
-        }
-
-        $request->validate([
-            'id_buku'        => 'required|exists:buku,id_buku',
-            'jumlah'         => 'required',
-            'tanggal_pinjam' => 'required',
-        ]);
-
-        Peminjaman::create([
-            'id_user'         => $currentUser->id, // dikunci dari session
-            'id_buku'         => $request->input('id_buku'),
-            'jumlah'          => $request->input('jumlah'),
-            'tanggal_pinjam'  => $request->input('tanggal_pinjam'),
-            'tanggal_kembali' => $request->input('tanggal_kembali') ?: null,
-            'status'          => 'Pending',
-        ]);
-
-        $this->catat('Peminjam ' . ($currentUser->username ?? 'Siswa') . ' mengajukan peminjaman buku.');
-
-        return redirect(route('peminjam.riwayat'))->with('success', 'Pengajuan peminjaman berhasil dikirim!');
+    if (! $currentUser) {
+        return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
     }
 
+    $request->validate([
+        'id_buku'        => 'required|exists:buku,id_buku',
+        'jumlah'         => 'required',
+        'tanggal_pinjam' => 'required',
+    ]);
+
+    Peminjaman::create([
+        'id_user'         => $currentUser->id,
+        'id_buku'         => $request->input('id_buku'),
+        'jumlah'          => $request->input('jumlah'),
+        'tanggal_pinjam'  => $request->input('tanggal_pinjam'),
+        'tanggal_kembali' => $request->input('tanggal_kembali') ?: null,
+        'status'          => 'Pending',
+    ]);
+
+    $this->catat('Peminjam ' . ($currentUser->username ?? 'Siswa') . ' mengajukan peminjaman buku.');
+
+    return redirect(route('peminjam.riwayat'))->with('success', 'Pengajuan peminjaman berhasil dikirim!');
+}
     // ==========================================
     // PETUGAS
     // ==========================================

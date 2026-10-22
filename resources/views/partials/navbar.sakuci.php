@@ -60,65 +60,103 @@
 
         {{-- Menu utama --}}
         <ul class="nav nav-pills flex-column gap-1 mb-auto">
-            <li class="nav-item">
-                <a class="nav-link {{ is_route('home') ? 'active' : '' }}" href="{{ route('home') }}">
-                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
-                    <span class="sidebar-label">Beranda</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ is_route('kategori.index') ? 'active' : '' }}" href="{{ route('kategori.index') }}">
-                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
-                    <span class="sidebar-label">Kategori</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ is_route('buku.index') ? 'active' : '' }}" href="{{ route('buku.index') }}">
-                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
-                    <span class="sidebar-label">Buku</span>
-                </a>
-            </li>
+    <li class="nav-item">
+        <a class="nav-link {{ is_route('home') ? 'active' : '' }}" href="{{ route('home') }}">
+            <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+            <span class="sidebar-label">Beranda</span>
+        </a>
+    </li>
 
+    @if ($currentUser && $currentUser->role === 'admin')
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('kategori.index') ? 'active' : '' }}" href="{{ route('kategori.index') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+                <span class="sidebar-label">Kategori</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('buku.index') ? 'active' : '' }}" href="{{ route('buku.index') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+                <span class="sidebar-label">Buku</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('peminjaman.index') ? 'active' : '' }}" href="{{ route('peminjaman.index') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M3 9h18"/><path d="M8 4v4M16 4v4"/></svg>
+                <span class="sidebar-label">Peminjaman</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('pengembalian.index') ? 'active' : '' }}" href="{{ route('pengembalian.index') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+                <span class="sidebar-label">Pengembalian</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('admin.log.index') ? 'active' : '' }}" href="{{ route('admin.log.index') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+                <span class="sidebar-label">Log Aktivitas</span>
+            </a>
+        </li>
+    @elseif ($currentUser && $currentUser->role === 'siswa')
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('peminjam.createPeminjam') ? 'active' : '' }}" href="{{ route('peminjam.createPeminjam') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M3 9h18"/><path d="M8 4v4M16 4v4"/></svg>
+                <span class="sidebar-label">Ajukan Peminjaman</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('peminjam.riwayat') ? 'active' : '' }}" href="{{ route('peminjam.riwayat') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+                <span class="sidebar-label">Riwayat Peminjaman</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('peminjam.pengembalian.create') ? 'active' : '' }}" href="{{ route('peminjam.pengembalian.create') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+                <span class="sidebar-label">Ajukan Pengembalian</span>
+            </a>
+        </li>
+    @elseif ($currentUser && $currentUser->role === 'petugas')
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('petugas.peminjaman.index') ? 'active' : '' }}" href="{{ route('petugas.peminjaman.index') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M3 9h18"/><path d="M8 4v4M16 4v4"/></svg>
+                <span class="sidebar-label">Peminjaman Masuk</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('petugas.pengembalian.index') ? 'active' : '' }}" href="{{ route('petugas.pengembalian.index') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+                <span class="sidebar-label">Pengembalian</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('petugas.pengembalian.cetak') ? 'active' : '' }}" href="{{ route('petugas.pengembalian.cetak') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18h12v4H6zM6 14h12M4 9h16a2 2 0 0 1 2 2v5h-4v-3H6v3H2v-5a2 2 0 0 1 2-2z"/></svg>
+                <span class="sidebar-label">Cetak Laporan</span>
+            </a>
+        </li>
+    @endif
+
+    @if ($currentUser)
+        <li class="nav-item">
+            <a class="nav-link {{ is_route('admin.dashboard', 'dashboard') ? 'active' : '' }}"
+               href="{{ $currentUser->role === 'admin' ? route('admin.dashboard') : route('dashboard') }}">
+                <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+                <span class="sidebar-label">Dashboard</span>
+            </a>
+        </li>
+    @else
+        @if ($canRegister)
             <li class="nav-item">
-                <a class="nav-link {{ is_route('peminjaman.index') ? 'active' : '' }}" href="{{ route('peminjaman.index') }}">
-                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M3 9h18"/><path d="M8 4v4M16 4v4"/></svg>
-                    <span class="sidebar-label">Peminjaman</span>
+                <a class="nav-link {{ is_route('register') ? 'active' : '' }}" href="{{ route('register') }}">
+                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"/><path d="M17 8v6M20 11h-6"/></svg>
+                    <span class="sidebar-label">Daftar</span>
                 </a>
             </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ is_route('pengembalian.index') ? 'active' : '' }}" href="{{ route('pengembalian.index') }}">
-                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
-                    <span class="sidebar-label">Pengembalian</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ is_route('admin.log.index') ? 'active' : '' }}" href="{{ route('admin.log.index') }}">
-                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-                    <span class="sidebar-label">Log Aktivitas</span>
-                </a>
-            </li>
-
-            @if ($currentUser)
-                <li class="nav-item">
-                    <a class="nav-link {{ is_route('admin.dashboard', 'dashboard') ? 'active' : '' }}"
-                       href="{{ $currentUser->role === 'admin' ? route('admin.dashboard') : route('dashboard') }}">
-                        <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
-                        <span class="sidebar-label">Dashboard</span>
-                    </a>
-                </li>
-            @else
-                @if ($canRegister)
-                    <li class="nav-item">
-                        <a class="nav-link {{ is_route('register') ? 'active' : '' }}" href="{{ route('register') }}">
-                            <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"/><path d="M17 8v6M20 11h-6"/></svg>
-                            <span class="sidebar-label">Daftar</span>
-                        </a>
-                    </li>
-                @endif
-            @endif
-        </ul>
+        @endif
+    @endif
+</ul>
 
         {{-- Area bawah: login / user aktif --}}
         <div class="pt-3 border-top mt-3">

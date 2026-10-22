@@ -23,7 +23,7 @@ class UserController extends Controller
         $data = $request->validate([
             'username' => 'required|min:3|max:50|alpha_dash|unique:users,username',
             'password' => 'required|min:6',
-            'role'     => 'required|exists:roles,name',
+            'role'     => 'required|exists:role,name',
         ]);
 
         User::create([

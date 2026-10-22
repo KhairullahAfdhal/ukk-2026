@@ -78,7 +78,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
 // ==========================================
 // ROLE: PEMINJAM 
 // ==========================================
-Route::group(['prefix' => 'peminjam', 'middleware' => 'peminjam'], function () {
+Route::group(['prefix' => 'peminjam', 'middleware' => 'siswa'], function () {
     Route::get('/', [DashboardController::class, 'peminjam'])->name('peminjam.dashboard');
     Route::get('/daftar-alat', [AlatController::class, 'daftarAlatPeminjam'])->name('peminjam.alat');
     Route::get('/peminjam', [PeminjamanController::class, 'indexPeminjam'])->name('peminjam.indexPeminjam');

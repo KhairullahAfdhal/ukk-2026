@@ -6,7 +6,7 @@ use Sakuci\Database\Model;
 
 class Role extends Model
 {
-    protected static ?string $table = 'roles';
+    protected static ?string $table = 'role';
 
     // Kolom yang boleh diisi lewat create()/update()
     protected array $fillable = ['name', 'can_register'];
