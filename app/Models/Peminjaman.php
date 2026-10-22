@@ -11,12 +11,11 @@ class Peminjaman extends Model
     protected string $primaryKey = 'id_peminjaman';
 
     protected array $fillable = [
-        'id_user',
-        'id_alat',
-        'jumlah',
-        'tanggal_pinjam',
-        'tanggal_kembali',
-        'status',
-        'denda'
+    'id_peminjaman',
+    'tanggal_pengembalian',
+    'terlambat_hari',
+    'denda',
+    'kondisi_barang',
+    'catatan',
     ];
 }

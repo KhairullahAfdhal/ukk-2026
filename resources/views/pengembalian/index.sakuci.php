@@ -2,43 +2,49 @@
 
 @section('content')
 <div class="container">
-    <h1>DAFTAR PEMINJAMAN</h1>
-    <a href="{{ route('pengembalian.create') }}" class="btn btn-primary mb-3 btn-sm">Tambah Peminjaman</a>
+    <h1>DAFTAR PENGEMBALIAN</h1>
     <table class="table table-bordered table-striped">
-        <thead> 
+        <thead>
             <tr>
                 <th>No</th>
                 <th>Peminjam</th>
-                <th>Nama Buku</th>
-                <th>Jumlah</th>
-                <th>Tgl Pinjam</th>
+                <th>Buku</th>
+                <th>Status</th>
                 <th>Tgl Kembali</th>
+                <th>Terlambat</th>
+                <th>Denda</th>
+                <th>Kondisi</th>
                 <th>Aksi</th>
-            </tr>   
+            </tr>
         </thead>
         <tbody>
-            @php 
-            $no = 1;
-            @endphp
-            @foreach ($data as $items)
+            @php $no = 1; @endphp
+            @foreach ($peminjaman as $items)
             <tr>
                 <td>{{ $no++ }}</td>
-                <td>{{ $items->nama_pengembalian}}</td>
-                <td>{{ $items->keterangan }}</td>
-                <td>{{ $items->kode_kategori }}</td>
+                <td>{{ $items->nama_peminjam }}</td>
+                <td>{{ $items->nama_buku }}</td>
+                <td>{{ $items->status }}</td>
+                <td>{{ $items->pengembalian->tanggal_pengembalian ?? '-' }}</td>
+                <td>{{ $items->pengembalian->terlambat_hari ?? '-' }}</td>
+                <td>{{ $items->pengembalian->denda ?? '-' }}</td>
+                <td>{{ $items->pengembalian->kondisi_barang ?? '-' }}</td>
                 <td>
-                    <a href="{{ route('pengembalian.edit', ['id_pengembalian' => $items->id_pengembalian]) }}" class="btn btn-sm btn-warning">Edit</a>
-                    <form action="{{ route('pengembalian.destroy', ['id_kategori' => $items->id_pengembalian]) }}" method="POST" style="display: inline-block;">
+                    <a href="{{ route('pengembalian.edit', ['id_peminjaman' => $items->id_peminjaman]) }}" class="btn btn-sm btn-warning">
+                        {{ $items->pengembalian ? 'Edit' : 'Catat Kembali' }}
+                    </a>
+                    @if ($items->pengembalian)
+                    <form action="{{ route('pengembalian.delete', ['id_peminjaman' => $items->id_peminjaman]) }}" method="POST" style="display: inline-block;">
                         @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus kategori ini?')">Hapus</button>
-
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus data pengembalian ini?')">Hapus</button>
+                    </form>
+                    @endif
                 </td>
-            </tr>     
+            </tr>
             @endforeach
         </tbody>
     </table>
-    
-    {!! $data->links() !!}
+
+    {!! $peminjaman->links() !!}
 </div>
 @endsection

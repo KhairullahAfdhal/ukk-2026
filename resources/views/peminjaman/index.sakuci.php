@@ -5,7 +5,7 @@
     <h1>DAFTAR PEMINJAMAN</h1>
     <a href="{{ route('peminjaman.create') }}" class="btn btn-primary mb-3 btn-sm">Tambah Peminjaman</a>
     <table class="table table-bordered table-striped">
-        <thead> 
+        <thead>
             <tr>
                 <th>No</th>
                 <th>Peminjam</th>
@@ -13,32 +13,35 @@
                 <th>Jumlah</th>
                 <th>Tgl Pinjam</th>
                 <th>Tgl Kembali</th>
+                <th>Status</th>
                 <th>Aksi</th>
-            </tr>   
+            </tr>
         </thead>
         <tbody>
-            @php 
+            @php
             $no = 1;
             @endphp
-            @foreach ($data as $items)
+            @foreach ($datap as $items)
             <tr>
                 <td>{{ $no++ }}</td>
-                <td>{{ $items->nama_peminjaman}}</td>
-                <td>{{ $items->keterangan }}</td>
-                <td>{{ $items->kode_kategori }}</td>
+                <td>{{ $items->nama_peminjam }}</td>
+                <td>{{ $items->nama_buku }}</td>
+                <td>{{ $items->jumlah }}</td>
+                <td>{{ $items->tanggal_pinjam }}</td>
+                <td>{{ $items->tanggal_kembali ?? '-' }}</td>
+                <td>{{ $items->status }}</td>
                 <td>
-                    <a href="{{ route('peminjaman.edit', ['id_peminjaman' => $items->id_peminjaman]) }}" class="btn btn-sm btn-warning">Edit</a>
-                    <form action="{{ route('peminjaman.destroy', ['id_peminjaman' => $items->id_peminjaman]) }}" method="POST" style="display: inline-block;">
+                    <a href="{{ route('peminjaman.edit', ['id' => $items->id_peminjaman]) }}" class="btn btn-sm btn-warning">Edit</a>
+                    <form action="{{ route('peminjaman.delete', ['id' => $items->id_peminjaman]) }}" method="POST" style="display: inline-block;">
                         @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus kategori ini?')">Hapus</button>
-
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus data peminjaman ini?')">Hapus</button>
+                    </form>
                 </td>
-            </tr>     
+            </tr>
             @endforeach
         </tbody>
     </table>
-    
-    {!! $data->links() !!}
+
+    {!! $datap->links() !!}
 </div>
 @endsection

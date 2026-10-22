@@ -7,169 +7,163 @@ use Sakuci\Http\Request;
 use App\Models\Pengembalian;
 use App\Models\Peminjaman;
 use App\Models\User;
-use App\Models\Alat;
+use App\Models\Buku;
 use App\Models\LogAktifitas;
 
 class PengembalianController extends Controller
 {
-    // =========================================================================
-    // BAGIAN 1: KHUSUS ADMIN (FULL AKSES KELOLA)
-    // =========================================================================
+    private function catat(string $aktifitas): void
+    {
+        $user = User::current();
+        LogAktifitas::create([
+            'id_user'   => $user->id ?? null,
+            'aktifitas' => $aktifitas,
+        ]);
+    }
+
+    private function lengkapi($datap)
+    {
+        $peminjamanList = [];
+        foreach (Peminjaman::all() as $p) {
+            $peminjamanList[$p->id_peminjaman] = $p;
+        }
+
+        $userList = [];
+        foreach (User::all() as $u) {
+            $userList[$u->id] = $u->username;
+        }
+
+        $bukuList = [];
+        foreach (Buku::all() as $b) {
+            $bukuList[$b->id_buku] = $b->nama_buku;
+        }
+
+        foreach ($datap as $item) {
+            $p = $peminjamanList[$item->id_peminjaman] ?? null;
+            $item->nama_peminjam = $p ? ($userList[$p->id_user] ?? '-') : '-';
+            $item->nama_buku     = $p ? ($bukuList[$p->id_buku] ?? '-') : '-';
+        }
+
+        return $datap;
+    }
+
+    // ==========================================
+    // ADMIN
+    // ==========================================
 
     public function index(Request $request)
-    {
-        $datap = Pengembalian::orderBy('id_pengembalian', 'desc')->paginate(10);
-        $peminjaman = Peminjaman::all();
-        $users = User::all();
-        $alats = Alat::all();
+{
+    $peminjaman = Peminjaman::orderBy('id_peminjaman', 'desc')->paginate(10);
 
-        $peminjamanList = [];
-        foreach ($peminjaman as $p) {
-            $pid = $p->id_peminjaman ?? $p->id;
-            $peminjamanList[$pid] = $p;
-        }
-
-        $userList = [];
-        foreach ($users as $u) {
-            $id = $u->id ?? $u->id_user;
-            $userList[$id] = $u->username ?? $u->nama ?? "User #{$id}";
-        }
-
-        $alatList = [];
-        foreach ($alats as $a) {
-            $id = $a->id_alat ?? $a->id;
-            $alatList[$id] = $a->nama_alat ?? "Alat #{$id}";
-        }
-
-        return view('pengembalian.index', compact('datap', 'peminjamanList', 'userList', 'alatList'));
+    $pengembalianList = [];
+    foreach (Pengembalian::all() as $p) {
+        $pengembalianList[$p->id_peminjaman] = $p;
     }
 
-    public function create(Request $request)
-    {
-        $peminjaman = Peminjaman::where('status', '!=', 'Dikembalikan')->get();
-        $users = User::all();
-        $alats = Alat::all();
-
-        $userList = [];
-        foreach ($users as $u) {
-            $id = $u->id ?? $u->id_user;
-            $userList[$id] = $u->username ?? $u->nama ?? "User #{$id}";
-        }
-
-        $alatList = [];
-        foreach ($alats as $a) {
-            $id = $a->id_alat ?? $a->id;
-            $alatList[$id] = $a->nama_alat ?? "Alat #{$id}";
-        }
-
-        return view('pengembalian.create', compact('peminjaman', 'userList', 'alatList'));
+    $userList = [];
+    foreach (User::all() as $u) {
+        $userList[$u->id] = $u->username;
     }
 
-    public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'id_peminjaman'        => 'required|integer',
-            'tanggal_pengembalian' => 'required|date',
-            'terlambat_hari'       => 'nullable|integer|min:0',
-            'denda'                => 'nullable|integer|min:0',
-            'kondisi_barang'       => 'nullable|string|max:100',
-            'catatan'              => 'nullable|string',
-        ]);
-
-        $validatedData['terlambat_hari'] = $validatedData['terlambat_hari'] ?? 0;
-        $validatedData['denda']          = $validatedData['denda'] ?? 0;
-        $validatedData['kondisi_barang'] = $validatedData['kondisi_barang'] ?? 'Baik';
-
-        Pengembalian::create($validatedData);
-
-        $peminjaman = Peminjaman::findOrFail($validatedData['id_peminjaman']);
-        $peminjaman->update(['status' => 'Dikembalikan']);
-
-        $currentUser = User::current();
-        LogAktifitas::create([
-            'id_user'   => $currentUser->id ?? null,
-            'aktifitas' => 'Admin mencatat pengembalian alat (Peminjaman ID: ' . $validatedData['id_peminjaman'] . ').'
-        ]);
-
-        return redirect(route('pengembalian.index'))->with('success', 'Data pengembalian berhasil ditambahkan.');
+    $bukuList = [];
+    foreach (Buku::all() as $b) {
+        $bukuList[$b->id_buku] = $b->nama_buku;
     }
 
-    public function edit(Request $request, $id_pengembalian)
-    {
-        $datap = Pengembalian::findOrFail($id_pengembalian);
-        $peminjaman = Peminjaman::find($datap->id_peminjaman);
-
-        $peminjamName = '-';
-        $alatName = '-';
-
-        if ($peminjaman) {
-            $user = User::find($peminjaman->id_user);
-            $alat = Alat::find($peminjaman->id_alat);
-            if (!$alat) {
-                $alat = Alat::where('id_alat', $peminjaman->id_alat)->first();
-            }
-
-            $peminjamName = $user->username ?? $user->nama ?? ("User #" . $peminjaman->id_user);
-            $alatName = $alat->nama_alat ?? ("Alat #" . $peminjaman->id_alat);
-        }
-
-        return view('pengembalian.edit', compact('datap', 'peminjaman', 'peminjamName', 'alatName'));
+    foreach ($peminjaman as $item) {
+        $item->nama_peminjam = $userList[$item->id_user] ?? '-';
+        $item->nama_buku     = $bukuList[$item->id_buku] ?? '-';
+        $item->pengembalian  = $pengembalianList[$item->id_peminjaman] ?? null;
     }
 
-    public function update(Request $request, $id_pengembalian)
-    {
-        $validatedData = $request->validate([
-            'id_peminjaman'        => 'required|integer',
-            'tanggal_pengembalian' => 'required|date',
-            'terlambat_hari'       => 'nullable|integer|min:0',
-            'denda'                => 'nullable|integer|min:0',
-            'kondisi_barang'       => 'nullable|string|max:100',
-            'catatan'              => 'nullable|string',
-        ]);
+    return view('pengembalian.index', compact('peminjaman'));
+}
 
-        $pengembalian = Pengembalian::findOrFail($id_pengembalian);
-        $pengembalian->update($validatedData);
+public function edit(Request $request, $id_peminjaman)
+{
+    $peminjaman = Peminjaman::where('id_peminjaman', $id_peminjaman)->first();
 
-        $currentUser = User::current();
-        LogAktifitas::create([
-            'id_user'   => $currentUser->id ?? null,
-            'aktifitas' => 'Admin memperbarui data pengembalian (ID: ' . $id_pengembalian . ').'
-        ]);
-
-        return redirect(route('pengembalian.index'))->with('success', 'Data pengembalian berhasil diubah.');
+    if (! $peminjaman) {
+        return redirect(route('pengembalian.index'))->with('error', 'Data peminjaman tidak ditemukan.');
     }
 
-    public function delete(Request $request, $id_pengembalian)
-    {
-        $pengembalian = Pengembalian::findOrFail($id_pengembalian);
+    $user = User::find($peminjaman->id_user);
+    $buku = Buku::find($peminjaman->id_buku);
+    $pengembalian = Pengembalian::where('id_peminjaman', $id_peminjaman)->first();
+
+    return view('pengembalian.edit', [
+        'peminjaman'   => $peminjaman,
+        'pengembalian' => $pengembalian,
+        'peminjamName' => $user->username ?? ('User #' . $peminjaman->id_user),
+        'bukuName'     => $buku->nama_buku ?? ('Buku #' . $peminjaman->id_buku),
+    ]);
+}
+
+public function update(Request $request, $id_peminjaman)
+{
+    $data = $request->validate([
+        'tanggal_pengembalian' => 'required|date',
+        'terlambat_hari'       => 'nullable|integer|min:0',
+        'denda'                => 'nullable|integer|min:0',
+        'kondisi_barang'       => 'nullable|string|max:100',
+        'catatan'              => 'nullable|string',
+    ]);
+
+    $data['terlambat_hari'] = $data['terlambat_hari'] ?? 0;
+    $data['denda']          = $data['denda'] ?? 0;
+    $data['kondisi_barang'] = $data['kondisi_barang'] ?? 'Baik';
+
+    $pengembalian = Pengembalian::where('id_peminjaman', $id_peminjaman)->first();
+
+    if ($pengembalian) {
+        $pengembalian->update($data);
+    } else {
+        $data['id_peminjaman'] = $id_peminjaman;
+        Pengembalian::create($data);
+    }
+
+    $peminjaman = Peminjaman::findOrFail($id_peminjaman);
+    $peminjaman->update(['status' => 'Di Kembalikan']);
+
+    $this->catat('Admin mencatat pengembalian buku (Peminjaman ID: ' . $id_peminjaman . ').');
+
+    return redirect(route('pengembalian.index'))->with('success', 'Data pengembalian berhasil disimpan.');
+}
+
+public function delete(Request $request, $id_peminjaman)
+{
+    $pengembalian = Pengembalian::where('id_peminjaman', $id_peminjaman)->first();
+
+    if ($pengembalian) {
         $pengembalian->delete();
-
-        $currentUser = User::current();
-        LogAktifitas::create([
-            'id_user'   => $currentUser->id ?? null,
-            'aktifitas' => 'Admin menghapus data pengembalian (ID: ' . $id_pengembalian . ').'
-        ]);
-
-        return redirect(route('pengembalian.index'))->with('success', 'Data pengembalian berhasil dihapus.');
+        $this->catat('Admin menghapus data pengembalian (Peminjaman ID: ' . $id_peminjaman . ').');
     }
 
+    return redirect(route('pengembalian.index'))->with('success', 'Data pengembalian berhasil dihapus.');
+}
 
-    // =========================================================================
-    // BAGIAN 2: KHUSUS ROLE PEMINJAM (SISWA)
-    // =========================================================================
+    // ==========================================
+    // PEMINJAM / SISWA
+    // ==========================================
 
     public function createPeminjam(Request $request)
     {
         $user = User::current();
-        if (!$user) return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
+        if (! $user) {
+            return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
+        }
 
-        $id_user = $user->id ?? $user->id_user;
-        $peminjamanAktif = Peminjaman::where('id_user', $id_user)
-                                     ->whereIn('status', ['Dipinjam', 'Disetujui', 'dipinjam', 'disetujui'])
-                                     ->get();
+        $peminjamanAktif = Peminjaman::where('id_user', $user->id)
+            ->whereIn('status', ['Dipinjam', 'Disetujui'])
+            ->get();
+
+        $bukuList = [];
+        foreach (Buku::all() as $b) {
+            $bukuList[$b->id_buku] = $b->nama_buku;
+        }
 
         foreach ($peminjamanAktif as $p) {
-            $p->alat = Alat::where('id_alat', $p->id_alat)->first();
+            $p->nama_buku = $bukuList[$p->id_buku] ?? '-';
         }
 
         return view('peminjam.pengembalian', compact('user', 'peminjamanAktif'));
@@ -178,102 +172,58 @@ class PengembalianController extends Controller
     public function storePeminjam(Request $request)
     {
         $currentUser = User::current();
-        if (!$currentUser) return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
+        if (! $currentUser) {
+            return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
+        }
 
-        $validatedData = $request->validate([
+        $data = $request->validate([
             'id_peminjaman'        => 'required|integer',
             'tanggal_pengembalian' => 'required|date',
             'kondisi_barang'       => 'nullable|string|max:100',
             'catatan'              => 'nullable|string',
         ]);
 
-        $validatedData['terlambat_hari'] = 0;
-        $validatedData['denda']          = 0;
-        $validatedData['kondisi_barang'] = $validatedData['kondisi_barang'] ?? 'Baik';
+        $data['terlambat_hari'] = 0;
+        $data['denda']          = 0;
+        $data['kondisi_barang'] = $data['kondisi_barang'] ?? 'Baik';
 
-        Pengembalian::create($validatedData);
+        Pengembalian::create($data);
 
-        $peminjaman = Peminjaman::findOrFail($validatedData['id_peminjaman']);
-        $peminjaman->update(['status' => 'Dikembalikan']);
+        $peminjaman = Peminjaman::findOrFail($data['id_peminjaman']);
+        $peminjaman->update(['status' => 'Di Kembalikan']);
 
-        LogAktifitas::create([
-            'id_user'   => $currentUser->id,
-            'aktifitas' => 'Peminjam ' . ($currentUser->username ?? 'Siswa') . ' mengajukan pengembalian alat.'
-        ]);
+        $this->catat('Peminjam ' . ($currentUser->username ?? 'Siswa') . ' mengajukan pengembalian buku.');
 
         return redirect(route('peminjam.riwayat'))->with('success', 'Pengajuan pengembalian berhasil dikirim.');
     }
 
-
-    // =========================================================================
-    // BAGIAN 3: KHUSUS ROLE PETUGAS (PANTAU & CETAK LAPORAN)
-    // =========================================================================
+    // ==========================================
+    // PETUGAS
+    // ==========================================
 
     public function indexPetugas(Request $request)
     {
         $user = User::current();
-        if (!$user) {
+        if (! $user) {
             return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
         }
 
         $datap = Pengembalian::orderBy('id_pengembalian', 'desc')->paginate(10);
-        
-        $peminjaman = Peminjaman::all();
-        $users = User::all();
-        $alats = Alat::all();
+        $datap = $this->lengkapi($datap);
 
-        $peminjamanList = [];
-        foreach ($peminjaman as $p) {
-            $pid = $p->id_peminjaman ?? $p->id;
-            $peminjamanList[$pid] = $p;
-        }
-
-        $userList = [];
-        foreach ($users as $u) {
-            $id = $u->id ?? $u->id_user;
-            $userList[$id] = $u->username ?? $u->nama ?? "User #{$id}";
-        }
-
-        $alatList = [];
-        foreach ($alats as $a) {
-            $id = $a->id_alat ?? $a->id;
-            $alatList[$id] = $a->nama_alat ?? "Alat #{$id}";
-        }
-
-        return view('petugas.pantau_pengembalian', compact('datap', 'peminjamanList', 'userList', 'alatList'));
+        return view('petugas.pantau_pengembalian', compact('datap'));
     }
 
     public function cetakPetugas(Request $request)
     {
         $user = User::current();
-        if (!$user) {
+        if (! $user) {
             return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
         }
 
         $datap = Pengembalian::orderBy('id_pengembalian', 'desc')->get();
-        
-        $peminjaman = Peminjaman::all();
-        $users = User::all();
-        $alats = Alat::all();
+        $datap = $this->lengkapi($datap);
 
-        $peminjamanList = [];
-        foreach ($peminjaman as $p) {
-            $pid = $p->id_peminjaman ?? $p->id;
-            $peminjamanList[$pid] = $p;
-        }
-
-        $userList = [];
-        foreach ($users as $u) {
-            $id = $u->id ?? $u->id_user;
-            $userList[$id] = $u->username ?? $u->nama ?? "User #{$id}";
-        }
-
-        $alatList = [];
-        foreach ($alats as $a) {
-            $id = $a->id_alat ?? $a->id;
-            $alatList[$id] = $a->nama_alat ?? "Alat #{$id}";
-        }
-
-       return view('petugas.cetak_laporan', compact('datap', 'peminjamanList', 'userList', 'alatList', 'user'));
+        return view('petugas.cetak_laporan', compact('datap', 'user'));
     }
 }

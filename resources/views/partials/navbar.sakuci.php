@@ -79,6 +79,27 @@
                 </a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link {{ is_route('peminjaman.index') ? 'active' : '' }}" href="{{ route('peminjaman.index') }}">
+                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M3 9h18"/><path d="M8 4v4M16 4v4"/></svg>
+                    <span class="sidebar-label">Peminjaman</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ is_route('pengembalian.index') ? 'active' : '' }}" href="{{ route('pengembalian.index') }}">
+                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+                    <span class="sidebar-label">Pengembalian</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ is_route('admin.log.index') ? 'active' : '' }}" href="{{ route('admin.log.index') }}">
+                    <svg class="me-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+                    <span class="sidebar-label">Log Aktivitas</span>
+                </a>
+            </li>
+
             @if ($currentUser)
                 <li class="nav-item">
                     <a class="nav-link {{ is_route('admin.dashboard', 'dashboard') ? 'active' : '' }}"

@@ -14,4 +14,9 @@ class LogAktifitas extends Model
         'id_user',
         'aktifitas'
     ];
+
+    public function user(): \Sakuci\Database\Relation
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id');
+    }
 }

@@ -3,8 +3,9 @@
 namespace App\Controllers;
 
 use App\Models\LogAktifitas;
+use Sakuci\Controller;
 
-class LogAktifitasController
+class LogAktifitasController extends Controller
 {
     public function index()
     {
