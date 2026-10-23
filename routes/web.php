@@ -73,6 +73,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
     Route::post('/pengembalian/{id_peminjaman}/delete', [PengembalianController::class, 'delete'])->name('pengembalian.delete');
 
     Route::get('/log-aktifitas', [LogAktifitasController::class, 'index'])->name('admin.log.index');
+    Route::get('/laporan', [PengembalianController::class, 'cetak'])->name('admin.laporan.cetak');
 });
 
 // ==========================================
@@ -97,5 +98,5 @@ Route::group(['prefix' => 'petugas', 'middleware' => 'petugas'], function () {
     Route::get('/peminjaman', [PeminjamanController::class, 'indexPetugas'])->name('petugas.peminjaman.index');
     Route::post('/peminjaman/{id}/setujui', [PeminjamanController::class, 'setujuiPetugas'])->name('petugas.peminjaman.setujui');
     Route::get('/pengembalian', [PengembalianController::class, 'indexPetugas'])->name('petugas.pengembalian.index');
-    Route::get('/pengembalian/cetak', [PengembalianController::class, 'cetakPetugas'])->name('petugas.pengembalian.cetak');
+    Route::get('/pengembalian/cetak', [PengembalianController::class, 'cetak'])->name('petugas.pengembalian.cetak');
 });

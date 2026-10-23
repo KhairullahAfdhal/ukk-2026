@@ -46,13 +46,58 @@ class PeminjamanController extends Controller
     // ADMIN
     // ==========================================
 
-    public function index(Request $request)
-    {
-        $datap = Peminjaman::orderBy('id_peminjaman', 'desc')->paginate(5);
-        $datap = $this->lengkapi($datap);
+   
 
-        return view('peminjaman.index', compact('datap'));
+public function index(Request $request)
+{
+    $search = trim((string) $request->input('search', ''));
+
+    $datap = Peminjaman::orderBy('id_peminjaman', 'desc')->get();
+
+    // Lengkapi nama peminjam dan nama buku.
+    $datap = $this->lengkapi($datap);
+
+    // Filter data berdasarkan kata kunci.
+    if ($search !== '') {
+        $datap = array_values(array_filter($datap, function ($item) use ($search) {
+            $kolom = [
+                $item->nama_peminjam ?? '',
+                $item->nama_buku ?? '',
+                $item->jumlah ?? '',
+                $item->tanggal_pinjam ?? '',
+                $item->tanggal_kembali ?? '',
+                $item->status ?? '',
+            ];
+
+            foreach ($kolom as $nilai) {
+                if (stripos((string) $nilai, $search) !== false) {
+                    return true;
+                }
+            }
+
+            return false;
+        }));
     }
+
+    // Pagination sederhana: 5 data per halaman.
+    $perPage = 5;
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $total = count($datap);
+
+    $hasil = array_slice($datap, ($page - 1) * $perPage, $perPage);
+
+    // Buat paginator menggunakan paginator bawaan SAKUCI.
+    $datap = new \Sakuci\Database\Paginator(
+        $hasil,
+        $total,
+        $perPage,
+        $page
+    );
+
+    return view('peminjaman.index', compact('datap'));
+}
+
+
 
     public function create(Request $request)
     {

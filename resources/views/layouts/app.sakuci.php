@@ -15,8 +15,8 @@
     </script>
 
     {{-- Bootstrap 5.3.8 -- file lokal, tidak butuh internet --}}
-    <link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css?v=3') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css?v=4') }}">
 
     <style>
         /* Pengaturan Layout Sidebar Permanen (Layar Besar / Laptop) */
@@ -36,7 +36,7 @@
         }
     </style>
 </head>
-<body class="bg-body-tertiary">
+<body>
 
 <div class="container-fluid p-0">
     <div class="row g-0">

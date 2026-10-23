@@ -79,7 +79,7 @@ class BukuController extends Controller
             ->with('success', 'Buku berhasil diperbarui.');
     }
 
-    public function delete($id_buku)
+    public function destroy($id_buku)
     {
         $buku = Buku::findOrFail($id_buku);
         $buku->delete();

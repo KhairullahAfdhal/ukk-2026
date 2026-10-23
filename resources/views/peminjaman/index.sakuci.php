@@ -3,6 +3,30 @@
 @section('content')
 <div class="container">
     <h1>DAFTAR PEMINJAMAN</h1>
+<form action="" method="GET" class="mb-4">
+    <div class="row g-2">
+        <div class="col-md-9">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Cari nama peminjam, nama buku, atau status..."
+                value="{{ $_GET['search'] ?? '' }}"
+            >
+        </div>
+
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Cari
+            </button>
+
+            <a href="{{ strtok($_SERVER['REQUEST_URI'], '?') }}"
+               class="btn btn-outline-secondary">
+                Reset
+            </a>
+        </div>
+    </div>
+</form>
     <a href="{{ route('peminjaman.create') }}" class="btn btn-primary mb-3 btn-sm">Tambah Peminjaman</a>
     <table class="table table-bordered table-striped">
         <thead>

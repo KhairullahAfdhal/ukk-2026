@@ -214,16 +214,64 @@ public function delete(Request $request, $id_peminjaman)
         return view('petugas.pantau_pengembalian', compact('datap'));
     }
 
-    public function cetakPetugas(Request $request)
-    {
-        $user = User::current();
-        if (! $user) {
-            return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
+   public function cetak(Request $request)
+{
+    $user = User::current();
+    if (! $user) {
+        return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
+    }
+
+    $dari   = $request->input('dari');
+    $sampai = $request->input('sampai');
+
+    $userList = [];
+    foreach (User::all() as $u) {
+        $userList[$u->id] = $u->username;
+    }
+
+    $bukuList = [];
+    foreach (Buku::all() as $b) {
+        $bukuList[$b->id_buku] = $b->nama_buku;
+    }
+
+    $pengembalianList = [];
+    foreach (Pengembalian::all() as $p) {
+        $pengembalianList[$p->id_peminjaman] = $p;
+    }
+
+    $rows = [];
+    $totalDenda = 0;
+
+    foreach (Peminjaman::orderBy('tanggal_pinjam', 'asc')->get() as $item) {
+        if ($dari && $item->tanggal_pinjam < $dari) {
+            continue;
+        }
+        if ($sampai && $item->tanggal_pinjam > $sampai) {
+            continue;
         }
 
-        $datap = Pengembalian::orderBy('id_pengembalian', 'desc')->get();
-        $datap = $this->lengkapi($datap);
+        $pengembalian = $pengembalianList[$item->id_peminjaman] ?? null;
+        $denda = $pengembalian->denda ?? 0;
 
-        return view('petugas.cetak_laporan', compact('datap', 'user'));
+        $rows[] = (object) [
+            'nama_peminjam'   => $userList[$item->id_user] ?? '-',
+            'nama_buku'       => $bukuList[$item->id_buku] ?? '-',
+            'jumlah'          => $item->jumlah,
+            'tanggal_pinjam'  => $item->tanggal_pinjam,
+            'tanggal_kembali' => $pengembalian->tanggal_pengembalian ?? null,
+            'status'          => $item->status,
+            'denda'           => $denda,
+        ];
+
+        $totalDenda += $denda;
+    }
+
+    return view('petugas.cetak_laporan', [
+        'rows'        => $rows,
+        'totalDenda'  => $totalDenda,
+        'dari'        => $dari,
+        'sampai'      => $sampai,
+        'dicetakOleh' => $user->username,
+    ]);
     }
 }
