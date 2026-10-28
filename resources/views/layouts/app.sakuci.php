@@ -1,68 +1,164 @@
-<!doctype html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', config('app.name'))</title>
+@php
+    $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+    $path = rtrim($path, '/') ?: '/';
 
-    {{-- Terapkan tema tersimpan sebelum apa pun dirender, supaya tidak ada flash warna --}}
-    <script>
-        (function () {
-            var saved = localStorage.getItem('sakuci-theme');
-            var theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-bs-theme', theme);
-        })();
-    </script>
+    // Belum login: tampil tanpa sidebar
+    $pengguna = \App\Models\User::current();
+    $tamu     = ! $pengguna;
 
-    {{-- Bootstrap 5.3.8 -- file lokal, tidak butuh internet --}}
-    <link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css?v=3') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css?v=4') }}">
+    $namaUser = $pengguna ? ($pengguna->username ?: 'Pengguna') : '';
+    $inisial  = strtoupper(substr($namaUser, 0, 1));
 
-    <style>
-        /* Pengaturan Layout Sidebar Permanen (Layar Besar / Laptop) */
-        @media (min-width: 992px) {
-            .sidebar-fixed {
-                width: 260px;
-                position: fixed;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                z-index: 1000;
-                overflow-y: auto;
-            }
-            .main-content-shifted {
-                margin-left: 260px; /* Memberikan ruang selebar sidebar di sebelah kiri */
-            }
+    // Tentukan peran: dari data user kalau ada, kalau tidak dari awalan alamat
+    $namaRole = '';
+    if ($pengguna) {
+        $r = $pengguna->role;
+        if (is_object($r)) { $r = $r->name; }
+        $namaRole = strtolower(is_scalar($r) ? (string) $r : '');
+    }
+
+    // Format menu: [alamat, label, ikon, cocokPersis]
+    if (strpos($namaRole, 'petugas') !== false || strpos($path, '/petugas') === 0) {
+        $peran = 'Petugas';
+        $menu = [
+            ['/petugas',                    'Dashboard',     'i-grid',  true],
+            ['/petugas/peminjaman',         'Peminjaman',    'i-swap',  false],
+            ['/petugas/pengembalian',       'Pengembalian',  'i-back',  true],
+            ['/petugas/pengembalian/cetak', 'Cetak laporan', 'i-print', false],
+        ];
+    } elseif (strpos($namaRole, 'siswa') !== false || strpos($namaRole, 'peminjam') !== false || strpos($path, '/peminjam') === 0) {
+        $peran = 'Peminjam';
+        $menu = [
+            ['/peminjam',                     'Beranda',             'i-home', true],
+            ['/peminjam/riwayat-peminjaman',  'Riwayat peminjaman',  'i-clock', false],
+            ['/peminjam/peminjam/ajukan',     'Ajukan pinjaman',     'i-swap',  false],
+            ['/peminjam/pengembalian/ajukan', 'Ajukan pengembalian', 'i-back',  false],
+        ];
+    } else {
+        $peran = 'Admin';
+        $menu = [
+            ['/',                    'Beranda',       'i-home',  true],
+            ['/admin',               'Dashboard',     'i-grid',  true],
+            ['/admin/kategori',      'Kategori',      'i-tag',   false],
+            ['/admin/buku',          'Buku',          'i-book',  false],
+            ['/admin/peminjaman',    'Peminjaman',    'i-swap',  false],
+            ['/admin/pengembalian',  'Pengembalian',  'i-back',  false],
+            ['/admin/log-aktifitas', 'Log aktivitas', 'i-clock', false],
+            ['/admin/laporan',       'Cetak laporan', 'i-print', false],
+        ];
+    }
+
+    // Pesan sukses / error dari redirect()->with(...)
+    $pesanOk = null;
+    $pesanErr = null;
+    try {
+        if (function_exists('session')) {
+            $pesanOk  = session('success');
+            $pesanErr = session('error');
         }
-    </style>
+    } catch (\Throwable $e) {}
+@endphp
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@yield('title', 'Beranda') - {{ config('app.name') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tema.css') }}">
+    <script>
+        try { var t = localStorage.getItem('tema'); if (t) { document.documentElement.dataset.theme = t; document.documentElement.setAttribute('data-bs-theme', t); } } catch (e) {}
+    </script>
 </head>
 <body>
 
-<div class="container-fluid p-0">
-    <div class="row g-0">
-        
-        {{-- Kolom Sidebar (Permanen di Kiri) --}}
-        <div class="col-lg-auto sidebar-fixed bg-body border-end">
-            @include('partials.navbar')
-        </div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+        <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/></symbol>
+        <symbol id="i-swap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13l-3-3M17 17H4l3 3"/></symbol>
+        <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+        <symbol id="i-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></symbol>
+        <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
+        <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="8" cy="8" r="1.2"/></symbol>
+    </defs>
+</svg>
 
-        {{-- Kolom Konten Utama di Kanan --}}
-        <div class="col main-content-shifted d-flex flex-column min-vh-100">
-            <main class="container-fluid px-4 flex-grow-1 py-4">
-                @include('partials.flash')
-
-                @yield('content')
-            </main>
-
-            @include('partials.footer')
-        </div>
-
+@if ($tamu)
+<main style="padding: 48px 20px;">
+    <div class="isi">
+        @yield('content')
     </div>
+</main>
+@else
+<header class="topbar">
+    <span>Peminjaman Buku</span>
+    <button type="button" class="btn-ghost kecil theme-toggle">Ganti tema</button>
+</header>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <strong>Peminjaman<br>Buku</strong>
+            <small>Perpustakaan sekolah</small>
+        </div>
+
+        <nav class="menu">
+            @foreach ($menu as $m)
+            @php
+                $aktif = $m[3] ? ($path === $m[0]) : (strpos($path, $m[0]) === 0);
+            @endphp
+            <a href="{{ $m[0] }}" class="{{ $aktif ? 'aktif' : '' }}"><svg><use href="#{{ $m[2] }}"/></svg>{{ $m[1] }}</a>
+            @endforeach
+        </nav>
+
+        <div class="side-bottom">
+            <div class="user">
+                <div class="avatar">{{ $inisial }}</div>
+                <div><b>{{ $namaUser }}</b><small>{{ $peran }}</small></div>
+            </div>
+            <div class="side-actions">
+                <form action="/logout" method="POST" style="flex:1; margin:0;">
+                    @csrf
+                    <button type="submit" class="btn-ghost" style="width:100%;">Keluar</button>
+                </form>
+                <button type="button" class="btn-ghost kecil theme-toggle">Tema</button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="isi">
+            @if ($pesanOk)
+                <div class="notif ok">{{ $pesanOk }}</div>
+            @endif
+            @if ($pesanErr)
+                <div class="notif err">{{ $pesanErr }}</div>
+            @endif
+            @yield('content')
+        </div>
+    </main>
 </div>
+@endif
 
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('js/theme.js') }}"></script>
 @yield('scripts')
-
+<script>
+    document.querySelectorAll('.theme-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var root = document.documentElement;
+            var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = next;
+            root.setAttribute('data-bs-theme', next);
+            try { localStorage.setItem('tema', next); } catch (e) {}
+        });
+    });
+</script>
 </body>
 </html>

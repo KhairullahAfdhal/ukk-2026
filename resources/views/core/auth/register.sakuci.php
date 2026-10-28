@@ -3,53 +3,45 @@
 @section('title', 'Daftar')
 
 @section('content')
+<div class="auth-card">
+    <h1>Daftar akun</h1>
+    <p class="sub">Sudah punya akun? <a href="{{ route('login') }}">Masuk di sini</a></p>
 
-    <div class="row">
-        <div class="col-md-5 mx-auto">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <h1 class="h4 mb-1">Daftar Akun</h1>
-                    <p class="text-secondary small mb-4">Sudah punya akun? <a href="{{ route('login') }}">Masuk di sini</a>.</p>
+    <form method="POST" action="{{ route('register.attempt') }}">
+        @csrf
 
-                    <form method="POST" action="{{ route('register.attempt') }}">
-                        @csrf
-
-                        <div class="mb-3">
-                            <label class="form-label" for="username">Username</label>
-                            <input type="text" id="username" name="username" value="{{ old('username') }}" class="form-control {{ errors()->has('username') ? 'is-invalid' : '' }}" autofocus>
-                            @error('username') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label" for="password">Password</label>
-                            <input type="password" id="password" name="password" class="form-control {{ errors()->has('password') ? 'is-invalid' : '' }}">
-                            @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label" for="password_confirmation">Konfirmasi Password</label>
-                            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control">
-                        </div>
-
-                        @if (count($roles) > 1)
-                            <div class="mb-3">
-                                <label class="form-label" for="role">Daftar sebagai</label>
-                                <select id="role" name="role" class="form-select {{ errors()->has('role') ? 'is-invalid' : '' }}">
-                                    @foreach ($roles as $role)
-                                        <option value="{{ $role->name }}" {{ old('role') === $role->name ? 'selected' : '' }}>{{ $role->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-                        @else
-                            <input type="hidden" name="role" value="{{ $roles[0]->name }}">
-                        @endif
-
-                        <button class="btn btn-brand w-100" type="submit">Daftar</button>
-                    </form>
-                </div>
-            </div>
+        <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="{{ old('username') }}" class="{{ errors()->has('username') ? 'invalid' : '' }}" autofocus>
+            @error('username') <div class="galat">{{ $message }}</div> @enderror
         </div>
-    </div>
 
+        <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="{{ errors()->has('password') ? 'invalid' : '' }}">
+            @error('password') <div class="galat">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="field">
+            <label for="password_confirmation">Konfirmasi password</label>
+            <input type="password" id="password_confirmation" name="password_confirmation">
+        </div>
+
+        @if (count($roles) > 1)
+            <div class="field">
+                <label for="role">Daftar sebagai</label>
+                <select id="role" name="role" class="{{ errors()->has('role') ? 'invalid' : '' }}">
+                    @foreach ($roles as $role)
+                        <option value="{{ $role->name }}" {{ old('role') === $role->name ? 'selected' : '' }}>{{ $role->name }}</option>
+                    @endforeach
+                </select>
+                @error('role') <div class="galat">{{ $message }}</div> @enderror
+            </div>
+        @else
+            <input type="hidden" name="role" value="{{ $roles[0]->name }}">
+        @endif
+
+        <button class="btn-accent" type="submit">Daftar</button>
+    </form>
+</div>
 @endsection

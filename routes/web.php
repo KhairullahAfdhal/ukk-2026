@@ -11,10 +11,45 @@ use App\Controllers\BukuController;
 use App\Controllers\PeminjamanController;
 use App\Controllers\PengembalianController;
 use App\Controllers\LogAktifitasController;
+use App\Models\Peminjaman;
+use App\Models\Buku;
+use App\Models\User;
+use App\Models\Pengembalian;
 use Sakuci\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $buku = [];
+    $namaBuku = [];
+    foreach (Buku::all() as $b) {
+        $buku[] = $b;
+        $namaBuku[$b->id_buku] = $b->nama_buku;
+    }
+
+    $dipinjam = [];
+    $jatuhTempo = 0;
+    $batas = date('Y-m-d', strtotime('+7 days'));
+    foreach (Peminjaman::orderBy('tanggal_pinjam', 'desc')->get() as $p) {
+        if (in_array($p->status, ['Dipinjam', 'Disetujui'])) {
+            $p->nama_buku = $namaBuku[$p->id_buku] ?? '-';
+            $dipinjam[] = $p;
+            if ($p->tanggal_kembali && $p->tanggal_kembali <= $batas) {
+                $jatuhTempo++;
+            }
+        }
+    }
+
+    $denda = 0;
+    foreach (Pengembalian::all() as $r) {
+        $denda += (int) $r->denda;
+    }
+
+    return view('welcome', [
+        'sedangDipinjam' => count($dipinjam),
+        'jatuhTempo'     => $jatuhTempo,
+        'denda'          => $denda,
+        'dipinjam'       => $dipinjam,
+        'bukuTerbaru'    => array_slice(array_reverse($buku), 0, 5),
+    ]);
 })->name('home');
 
 Route::get('/docs', [DocsController::class, 'index'])->name('docs');
