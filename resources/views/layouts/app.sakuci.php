@@ -6,7 +6,7 @@
     $pengguna = \App\Models\User::current();
     $tamu     = ! $pengguna;
 
-    $namaUser = $pengguna ? ($pengguna->username ?: 'Pengguna') : '';
+    $namaUser = $pengguna ? ($pengguna->username ?: 'Pengguna') : 'Tamu';
     $inisial  = strtoupper(substr($namaUser, 0, 1));
 
     // Tentukan peran: dari data user kalau ada, kalau tidak dari awalan alamat
@@ -18,7 +18,24 @@
     }
 
     // Format menu: [alamat, label, ikon, cocokPersis]
-    if (strpos($namaRole, 'petugas') !== false || strpos($path, '/petugas') === 0) {
+    if ($tamu) {
+        // Daftar hanya muncul kalau ada role yang boleh mendaftar (sama seperti halaman login)
+        $bisaDaftar = false;
+        try {
+            $bisaDaftar = \App\Models\Role::where('can_register', 1)->exists();
+        } catch (\Throwable $e) {
+            $bisaDaftar = false;
+        }
+
+        $peran = 'Belum masuk';
+        $menu = [
+            ['/',      'Beranda', 'i-home',  true],
+            ['/login', 'Masuk',   'i-login', true],
+        ];
+        if ($bisaDaftar) {
+            $menu[] = ['/register', 'Daftar', 'i-userplus', true];
+        }
+    } elseif (strpos($namaRole, 'petugas') !== false || strpos($path, '/petugas') === 0) {
         $peran = 'Petugas';
         $menu = [
             ['/petugas',                    'Dashboard',     'i-grid',  true],
@@ -29,7 +46,7 @@
     } elseif (strpos($namaRole, 'siswa') !== false || strpos($namaRole, 'peminjam') !== false || strpos($path, '/peminjam') === 0) {
         $peran = 'Peminjam';
         $menu = [
-            ['/peminjam',                     'Beranda',             'i-home', true],
+            ['/',                             'Beranda',             'i-home', true],
             ['/peminjam/riwayat-peminjaman',  'Riwayat peminjaman',  'i-clock', false],
             ['/peminjam/peminjam/ajukan',     'Ajukan pinjaman',     'i-swap',  false],
             ['/peminjam/pengembalian/ajukan', 'Ajukan pengembalian', 'i-back',  false],
@@ -46,6 +63,10 @@
             ['/admin/log-aktifitas', 'Log aktivitas', 'i-clock', false],
             ['/admin/laporan',       'Cetak laporan', 'i-print', false],
         ];
+    }
+
+    if ($tamu) {
+        $peran = 'Belum masuk';
     }
 
     // Pesan sukses / error dari redirect()->with(...)
@@ -85,17 +106,12 @@
         <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
         <symbol id="i-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></symbol>
         <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
+        <symbol id="i-login" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3"/></symbol>
+        <symbol id="i-userplus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6"/></symbol>
         <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="8" cy="8" r="1.2"/></symbol>
     </defs>
 </svg>
 
-@if ($tamu)
-<main style="padding: 48px 20px;">
-    <div class="isi">
-        @yield('content')
-    </div>
-</main>
-@else
 <header class="topbar">
     <span>Peminjaman Buku</span>
     <button type="button" class="btn-ghost kecil theme-toggle">Ganti tema</button>
@@ -124,11 +140,15 @@
                 <div><b>{{ $namaUser }}</b><small>{{ $peran }}</small></div>
             </div>
             <div class="side-actions">
+                @if ($tamu)
+                <button type="button" class="btn-ghost theme-toggle">Ganti tema</button>
+                @else
                 <form action="/logout" method="POST" style="flex:1; margin:0;">
                     @csrf
                     <button type="submit" class="btn-ghost" style="width:100%;">Keluar</button>
                 </form>
                 <button type="button" class="btn-ghost kecil theme-toggle">Tema</button>
+                @endif
             </div>
         </div>
     </aside>
@@ -145,7 +165,6 @@
         </div>
     </main>
 </div>
-@endif
 
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 @yield('scripts')
