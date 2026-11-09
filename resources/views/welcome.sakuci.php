@@ -17,15 +17,15 @@
     $urutB = 0;
 @endphp
 
-<section class="hero">
+<section class="hero" style="text-align: center;">
     <p class="tanggal">{{ $tanggalHariIni }}</p>
     <h1>Mau baca apa hari ini, {{ $namaUser }}?</h1>
 
-    <form class="search" action="/admin/buku" method="GET">
-        <input type="search" name="q" placeholder="Cari judul atau kode buku">
+    <!-- Bungkus form dengan div atau atur form agar width-nya penuh tapi ditengahkan -->
+    <form class="search" action="/admin/buku" method="GET" style="display: flex; justify-content: center; align-items: center; gap: 10px; max-width: 600px; margin: 0 auto;">
+        <input type="search" name="q" placeholder="Cari judul atau kode buku" style="flex: 1;">
         <button type="submit" class="btn-accent">Cari buku</button>
     </form>
-
 </section>
 
 <section class="ringkasan">
