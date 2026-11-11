@@ -190,30 +190,6 @@ public function index(Request $request)
     // ==========================================
 
     public function indexPeminjam(Request $request)
-    {
-        $currentUser = User::current();
-
-        if (! $currentUser) {
-            return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
-        }
-
-        $datap = Peminjaman::where('id_user', $currentUser->id)
-            ->orderBy('id_peminjaman', 'desc')
-            ->paginate(10);
-
-        $datap = $this->lengkapi($datap);
-
-        return view('peminjam.index_peminjam', compact('datap'));
-    }
-
-    public function createPeminjam(Request $request)
-    {
-        $buku = Buku::all();
-
-        return view('peminjam.create_peminjam', compact('buku'));
-    }
-
-   public function storePeminjam(Request $request)
 {
     $currentUser = User::current();
 
@@ -221,49 +197,87 @@ public function index(Request $request)
         return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
     }
 
-    $request->validate([
-        'id_buku'        => 'required|exists:buku,id_buku',
-        'jumlah'         => 'required',
-        'tanggal_pinjam' => 'required',
-    ]);
+    // 1. Ambil kata kunci pencarian dan bersihkan spasi
+    $search = trim((string) $request->input('search', ''));
 
-    Peminjaman::create([
-        'id_user'         => $currentUser->id,
-        'id_buku'         => $request->input('id_buku'),
-        'jumlah'          => $request->input('jumlah'),
-        'tanggal_pinjam'  => $request->input('tanggal_pinjam'),
-        'tanggal_kembali' => $request->input('tanggal_kembali') ?: null,
-        'status'          => 'Pending',
-    ]);
+    // 2. Ambil semua data peminjaman milik user yang sedang login
+    $datap = Peminjaman::where('id_user', $currentUser->id)
+        ->orderBy('id_peminjaman', 'desc')
+        ->get();
 
-    $this->catat('Peminjam ' . ($currentUser->username ?? 'Siswa') . ' mengajukan peminjaman buku.');
+    // 3. Lengkapi data dengan nama buku (menggunakan method lengkapi buatanmu)
+    $datap = $this->lengkapi($datap);
 
-    return redirect(route('peminjam.riwayat'))->with('success', 'Pengajuan peminjaman berhasil dikirim!');
-}
-    // ==========================================
-    // PETUGAS
-    // ==========================================
+    // 4. Menerapkan fungsi length untuk filter pencarian (jika kolom search diisi)
+    if (strlen($search) > 0) { // <-- Di sinilah fungsi length (strlen) dipakai!
+        $datap = array_values(array_filter($datap, function ($item) use ($search) {
+            $kolom = [
+                $item->nama_buku ?? '',
+                $item->jumlah ?? '',
+                $item->tanggal_pinjam ?? '',
+                $item->tanggal_kembali ?? '',
+                $item->status ?? '',
+            ];
 
-    public function indexPetugas(Request $request)
-    {
-        $datap = Peminjaman::orderBy('id_peminjaman', 'desc')->paginate(10);
-        $datap = $this->lengkapi($datap);
+            foreach ($kolom as $nilai) {
+                if (stripos((string) $nilai, $search) !== false) {
+                    return true;
+                }
+            }
 
-        return view('petugas.peminjaman', compact('datap'));
+            return false;
+        }));
     }
 
-    public function setujuiPetugas(Request $request, $id)
-    {
-        $peminjaman = Peminjaman::where('id_peminjaman', $id)->first();
+    // 5. Pagination manual agar tetap rapi (5 atau 10 data per halaman)
+    $perPage = 5;
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $total = count($datap); // Menghitung total data setelah difilter
 
-        if (! $peminjaman) {
-            return redirect(route('petugas.peminjaman.index'))->with('error', 'Data peminjaman tidak ditemukan.');
+    $hasil = array_slice($datap, ($page - 1) * $perPage, $perPage);
+
+    // 6. Buat paginator SAKUCI
+    $datap = new \Sakuci\Database\Paginator(
+        $hasil,
+        $total,
+        $perPage,
+        $page
+    );
+
+    return view('peminjam.index_peminjam', compact('datap'));
+}
+public function createPeminjam(Request $request)
+    {
+        $buku = Buku::all();
+
+        return view('peminjam.create_peminjam', compact('buku'));
+    }
+
+    public function storePeminjam(Request $request)
+    {
+        $currentUser = User::current();
+
+        if (! $currentUser) {
+            return redirect(route('login'))->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $peminjaman->update(['status' => 'Disetujui']);
+        $request->validate([
+            'id_buku'         => 'required|exists:buku,id_buku',
+            'jumlah'          => 'required',
+            'tanggal_pinjam'  => 'required',
+        ]);
 
-        $this->catat('Petugas menyetujui peminjaman (ID: ' . $id . ').');
+        Peminjaman::create([
+            'id_user'         => $currentUser->id,
+            'id_buku'         => $request->input('id_buku'),
+            'jumlah'          => $request->input('jumlah'),
+            'tanggal_pinjam'  => $request->input('tanggal_pinjam'),
+            'tanggal_kembali' => $request->input('tanggal_kembali') ?: null,
+            'status'          => 'Pending',
+        ]);
 
-        return redirect(route('petugas.peminjaman.index'))->with('success', 'Peminjaman berhasil disetujui!');
+        $this->catat('Peminjam ' . ($currentUser->username ?? 'Siswa') . ' mengajukan peminjaman buku.');
+
+        return redirect(route('peminjam.riwayat'))->with('success', 'Pengajuan peminjaman berhasil dikirim!');
     }
 }
