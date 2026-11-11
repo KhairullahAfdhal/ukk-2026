@@ -124,14 +124,3 @@ Route::group(['prefix' => 'peminjam', 'middleware' => 'siswa'], function () {
     Route::get('/pengembalian/ajukan', [PengembalianController::class, 'createPeminjam'])->name('peminjam.pengembalian.create');
     Route::post('/pengembalian/store', [PengembalianController::class, 'storePeminjam'])->name('peminjam.pengembalian.store');
 });
-
-// ==========================================
-// ROLE: PETUGAS
-// ==========================================
-Route::group(['prefix' => 'petugas', 'middleware' => 'petugas'], function () {
-    Route::get('/', [DashboardController::class, 'petugas'])->name('petugas.dashboard');
-    Route::get('/peminjaman', [PeminjamanController::class, 'indexPetugas'])->name('petugas.peminjaman.index');
-    Route::post('/peminjaman/{id}/setujui', [PeminjamanController::class, 'setujuiPetugas'])->name('petugas.peminjaman.setujui');
-    Route::get('/pengembalian', [PengembalianController::class, 'indexPetugas'])->name('petugas.pengembalian.index');
-    Route::get('/pengembalian/cetak', [PengembalianController::class, 'cetak'])->name('petugas.pengembalian.cetak');
-});
